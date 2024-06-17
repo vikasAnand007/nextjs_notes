@@ -263,7 +263,7 @@ Middleware in Next JS is a powerful feature that offers a robust way to intercep
 It does this at a global level significantly enhancing feature like redirection, URL rewrites, authentication, headers and cookie management and more.
 
 **See `middleware.ts` in code for more help**
-# Rendering in next.js
+# Rendering
 ## CSR (client side rendering)
 In CSR, we do not directly send HTML node to the browser. But, we send a bundle of JavaScript code to the browser. This JS code runs in the browser and then generates HTML node over there.
  **Pros**
@@ -281,27 +281,65 @@ In SSR, the HTML node is generated on the server itself and then transferred to 
 However, the HTML node generated in SSR is not fully user interactive because the browser specific APIs which is only present on browser, do not get implemented in it. 
 
 So, to make is fully interactive next.js does **hydration**.
+
 ### In Hydration
- - A bunch of JS code is also passed from behind after the server generated HTML is initially rendered. 
- - After this React takes control in the browser and reconstruct the DOM tree from start to finish by binding necessary JS logic to the required elements.
+
+- A bunch of JS code is also passed from behind after the server generated HTML is initially rendered.
+- After this React takes control in the browser and reconstruct the DOM tree from start to finish by binding necessary JS logic to the required elements.
 
 **Note**
+- For successful hydration, the current component tree in browser during hydration must exactly match the server-generated component tree which was received at the request.
 
- - For successful hydration, the current component tree in browser during hydration must exactly match the server-generated component tree which was received at the request.
-
+  
+  
 
 **Cons of SSR**
 
- - If there is any data fetching or any time taking task that must be completed before the server can begin generating HTML then it may result in initial load time.
- - The JavaScript required for hydration of the components needs to be fully loaded on the browser before the hydration process can start.
- - All components have to be hydrated before they become interactive.
+  
 
-*The above three cons of SSR in next.js is also known as "**All Or Nothong Waterfall**"*
+- If there is any data fetching or any time taking task that must be completed before the server can begin generating HTML then it may result in initial load time.
+
+- The JavaScript required for hydration of the components needs to be fully loaded on the browser before the hydration process can start.
+
+- All components have to be hydrated before they become interactive.
+
+*The above three cons of SSR **[having to load all the data for entire page,  Load the JS for entire page, Hydrate the entire page]** in next.js is also known as "**All Or Nothong Waterfall**"*
 
 ## SSG (Static site generation)
-SSG results in pages that are already rendered and ready to server. It occurs at the build time (static pages are generated in build folder which is served as it is when requested). 
+
+SSG results in pages that are already rendered and ready to server. It occurs at the build time (static pages are generated in build folder which is served as it is when requested).
+
 It is ideal for the pages whose content do not change very often.
 
 ## Solution for "All Or Nothing Waterfall"
+To solve **All or nothing waterfall** React **18** introduced **Suspense SSR Architecture**. I consists of two phases.
+
+ 1. HTML Streaming on the server
+ 2. Selective hydration on the client.
+
+### HTML Streaming on the server
+Instead of sending all the HTML of page at once, We have an option to wrap a part of page's HTML in a **Suspense** component. Suspense component has a fallback which will rendered as aplaceholder until the original content in Suspense is loaded.
+
+With help of this, The component wrapped in **Suspense** is left and remaining content is streamed on browser. And when the data of that component is fetched and prepared, it is also get streamed on browser and replaces the fallback.
+
+In this way, The **First problem  can be fixed**.
+
+**NOW for the second problem**, Code-splitting can be used.
+If a javascript code for any component is taking too much time to be loaded. Then it can be splitted with help of **React.lazy**, form the main bundle and let the the main bundle reach at browser. Later on when the JS for that component is ready it can be sent on browser in an additional bundle.
+
+In this way we do not need to fully load all the JS of page. It can be loaded in multiple chunks.
+### Selective hydration on the client.
+With help of code splitting, JS buundle can be splitted to multiple chunks and send on browser one after another. By doing this the hydrartion of each chunk is also done one after another. Hence, instead of doing all the hydration at once, page sections are hydrated one by one and become responsive one by one, resulting in better user experience.
+
+With help of this **Third problem is also fixed**.
+
+> Note if one component is hydrating and user tries to interact with another component which is not hydrated yet. React automatically starts the hydration of interacted component and leter on hydrates the previous component.
+
+Despite of above three problems, There is still one problem remaining which may lead to slow loading of pages.
+In an application there is a large part of UI which do not require any user interactivity. But in above SSR method, all the UI irrespective of weather it will take part on user-interactivity or not undergoes hydration. Which is clearly useless. 
+Apart of thisthereare some helper functions are which are delivered on browser to help achieving some functionality.
+So, if there is any way by which we skip hydration of those part of UI and keep the helpers on server itself and call then when required, it will be a great optimisation.
+Hence, to solve this problem React introduced **React Server Component**  and **Server actions** in **Version 19**
+
 
 
