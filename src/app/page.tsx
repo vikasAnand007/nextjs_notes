@@ -34,6 +34,11 @@ const Home = () => {
       <div>
         <Link href="/auth-with-slot">Auth with slots</Link>
       </div>
+      <div>
+        <h3>L0050</h3>
+        <Link href="/L0050/server-component">Server component</Link>
+        <Link href="/L0050/client-component">Client component</Link>
+      </div>
     </>
   );
 };

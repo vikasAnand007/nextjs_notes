@@ -282,6 +282,7 @@ However, the HTML node generated in SSR is not fully user interactive because th
 
 So, to make is fully interactive next.js does **hydration**.
 
+
 ### In Hydration
 
 - A bunch of JS code is also passed from behind after the server generated HTML is initially rendered.
@@ -335,11 +336,29 @@ With help of this **Third problem is also fixed**.
 
 > Note if one component is hydrating and user tries to interact with another component which is not hydrated yet. React automatically starts the hydration of interacted component and leter on hydrates the previous component.
 
-Despite of above three problems, There is still one problem remaining which may lead to slow loading of pages.
-In an application there is a large part of UI which do not require any user interactivity. But in above SSR method, all the UI irrespective of weather it will take part on user-interactivity or not undergoes hydration. Which is clearly useless. 
-Apart of thisthereare some helper functions are which are delivered on browser to help achieving some functionality.
+Despite of above three problems, There is still two problems remaining which may lead to slow loading of pages and a laggy user experience.
+
+ 1. **Unnecessary hydration delaying interactivity** : In an application there is a large part of UI which do not require any user interactivity. But in above SSR method, all the UI irrespective of weather it will take part on user-interactivity or not undergoes hydration. Which is clearly useless. 
+ 2. **Extensive client side processing that could result in poor performance**: There are some helper functions which are delivered on browser to help achieving some functionality. These helper functions might require high processing speed based on the usecase. This can make the browser slow.
+
 So, if there is any way by which we skip hydration of those part of UI and keep the helpers on server itself and call then when required, it will be a great optimisation.
+
 Hence, to solve this problem React introduced **React Server Component**  and **Server actions** in **Version 19**
 
+## React Server Components (RSC Architecture)
+RSC represents a new architecture designed by react team. It introduces a dual-component model.
 
+ 1. Client component
+ 2. Server component
+### Client components
+They are typically rendered on client side **(CSR)**  but, they can also be rendered to HTML on the server **(SSR)**. Allowing user to immediatly see the page's HTML content rather then a blank screen.
 
+Client components have access to the client environment such as browser apis, states, effects, event listners etc.
+### Server Component
+The code of server component is not sent on the browser, only the HTML generated from server component is sent on the browser.
+These components do not undergo hydration process. 
+It has direct access to server side resources such as file system, database etc. 
+Apart of these Server Components also do caching of generated HTML. Which make UI loading faster in subsequest requests
+
+## Rendering in Next.JS
+The app router in Next.JS 14 is build on **RSC Architecture**.
