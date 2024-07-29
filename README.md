@@ -389,11 +389,9 @@ After this loading all the consecutive loading happen on browser only.
 
 ## Rendering life cycle in Next.js
 
+
 See the rendering life cycle in this video
-
-<iframe  width="953"  height="536"  src="https://www.youtube.com/embed/o57paErp8Pc?list=PLC3y8-rFHvwjOKd6gdf4QtV1uYNiQnruI"  title="Next.js 14 Tutorial - 51 - RSC Rendering Lifecycle"  frameborder="0"  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"  referrerpolicy="strict-origin-when-cross-origin"  allowfullscreen></iframe>
-
-  
+[Video](https://www.youtube.com/embed/o57paErp8Pc)
 
 ## Static rendering
 
