@@ -360,5 +360,101 @@ These components do not undergo hydration process.
 It has direct access to server side resources such as file system, database etc. 
 Apart of these Server Components also do caching of generated HTML. Which make UI loading faster in subsequest requests
 
+
 ## Rendering in Next.JS
+
 The app router in Next.JS 14 is build on **RSC Architecture**.
+
+By default any component in Next.JS in app router is a server component. But we can make a component a client component by using **`"use client"`** directive.
+
+
+**Server component** are rendered on server only. Any code containing use of browser API will break on server component.
+
+- Fetching data
+- Directly accessing back end resources
+- Protecting sensitive information.
+- Keeping large dependencies on server.
+  
+
+**Client component** are rendered on browser. But they can also be rendered on server during initial load. This is to reduce the initial load time.
+*Note: Only those part which can be read by server is rendered on server.*
+After this loading all the consecutive loading happen on browser only.
+
+  - Adding interactivity
+  - Handling event listeners
+  - Using states and life cycle effects
+  - Using browser exclusive APIs
+  - Using custom hooks
+  - Using **class components**
+
+## Rendering life cycle in Next.js
+
+See the rendering life cycle in this video
+
+<iframe  width="953"  height="536"  src="https://www.youtube.com/embed/o57paErp8Pc?list=PLC3y8-rFHvwjOKd6gdf4QtV1uYNiQnruI"  title="Next.js 14 Tutorial - 51 - RSC Rendering Lifecycle"  frameborder="0"  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"  referrerpolicy="strict-origin-when-cross-origin"  allowfullscreen></iframe>
+
+  
+
+## Static rendering
+
+- In this static html pages are generated during build time. And these pages are served when any user requests.
+
+- This is the fastest method of rendering in Next.js
+
+- It is good for pages whose content do not change.
+
+- Static rendering is the default rendering strategy in the app router.
+
+- All routes weather it is client component or server component, it's static file is generated if it do not use any dynamic entity like **cookie**, **headers**, **search params** etc..
+
+- Along with html, **rsc payload** and **JS chunk** (for client components for hydration) is also generated corresponding to the page.
+
+- If we load the page directly, then HTML file is served. However if we navigate on the page without page reload the **rsc payload** renders that page on client itself.
+
+  
+
+## Dynamic rendering
+
+- In this static pages are not created during build time. Instead, they are created each time a user requests.
+
+- If Next.js detects any dynamic entity like **cookie**, **headers**, **search params** etc. It mark that component for dynamic rendering.
+
+  
+
+***Note: As a developer we do not need to choose between static and dynamic rendering. Next.js automatically applies the most optimum rendering strategy for each route, basedon features and API used.***
+
+  
+
+## Streaming
+
+- It is a strategy that allows progressive UI rendering from the server.
+
+- I reduces initial load time by. loading the components later which are taking more time to generate the content.
+
+- We can make the time-taking server component as **`async`** and wrap it in **`<Suspense/>`** component.
+
+  
+  
+
+See example in `src/app/product` folder
+
+## Protecting server only code
+To ensure we do not  use any server side code in any client component by accident, we can make use of **`server-only`** library. This will throw error during build time as well as development time if you use any server logic in client component. 
+
+See example in `src/app/server-only` folder
+
+## Protecting client only code
+To ensure we do not  use any client side code in any server component by accident, we can make use of **`client-only`** library. This will throw error during build time as well as development time if you use any client logic in server component. 
+
+See example in `src/app/client-only` folder
+
+## Interleaving server and client components.
+**Any component (client or server) directly nested under a client component, automatically behaves as a client component.**
+
+To solve this issue, **instead of directly importing and nesting under client component. We can pass the child component as a prop to client component**. This will protect the child component from automatically becoming client component.
+
+See example `src/app/interleaving`
+
+*This pattern is mostly used, when we have a scenario where we need to put a server component as a child of client component.* 
+
+Hence, it is used to try using client component at the leaf level of component tree as much as possible. Only when it cant be done then use the above pattern.
