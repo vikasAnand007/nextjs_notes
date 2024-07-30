@@ -456,3 +456,63 @@ See example `src/app/interleaving`
 *This pattern is mostly used, when we have a scenario where we need to put a server component as a child of client component.* 
 
 Hence, it is used to try using client component at the leaf level of component tree as much as possible. Only when it cant be done then use the above pattern.
+
+## Data fetching in Next.js (server side)
+**Server Components**: In app router, server components can be asynchronous. So we can use **async** and **await** directly with the server components ad fetch the API before returning **JSX**. For loading and error handling is server components, we can use **`loading.tsx`** and **`error.tsx`**.
+
+See example in `src/app/data-fetching/simple` 
+
+### Request Memoisation
+When ever we perform any fetch request, that request is memoised and response related to it is saved in cache, if we do the same request at any page in application, then memoised request and it's response is used.
+See example `src/app/data-fetching/request-memoisation`, Same request is performed in layout.tsx and page.tsx. But in page.tsx memoised request is used.
+
+### Caching of data in Next.js. 
+Next.js automatically caches the fetch response data. And even if the data in DB is changed, it will render the cached data only. This is known as **data cache** and it is done to improve performance and reduce loading time.
+
+*data cache is saved on server side in .next folder. It is browser independent. Hence, even if we change the browser or clear the browser cache. Next.js cache will still be there.* 
+
+Hence, If any server component using data fetching, Next.js will render it in following manner.
+
+***Start of cycle***
+Client requests page ---> Page need to fetch ABC-data for content --->  ABC-data is checked in **Data Cache**
+- If ABC-data available in Data Cache: Cached data is returned
+- if ABC-data not available in Data Cache: Data is fetched from API ---> Response is saved in Data Cache ---> Response is returned to component.
+
+***End of cycle***
+For any subsequent request above cycle is repeated.
+
+### Opt out from caching
+We can provide **`cache: "no-store"`** in options object of fetch method to opt out from caching. This will tell Next.js to fetch the fresh data each time we request the page.
+
+***NOTE: All the fetch logic written after the one with **`cache: "no-store"`** will also undergo same behaviour.***
+
+For example in file `src/app/data-fetching/caching-opt-out/page.tsx`, APIs are fetched in below sequence.
+
+`fetch("http://localhost:3001/products/1")
+fetch("http://localhost:3001/products", {cache:  "no-store"})
+fetch("http://localhost:3001/products/2")`
+
+Here, since 2nd one is using `{cache:  "no-store"}` , 3rd one will also behave like 2nd one because it is written below it.
+
+However, we can use **`export  const  fetchCache  =  "default-cache"`** at top of the code to eliminate above behaviour.
+See example `src/app/data-fetching/caching-opt-out/page.tsx`
+
+### Opt out from caching using dynamic functions like headers/cookies/search-params
+When we use any dynamic function like `headers/cookies/search-params`, then all the fetching code done after it will not be cached.
+In file `src/app/data-fetching/caching-opt-out-dynamic/page.tsx`, fetching logic after use of **`cookie()`**, will not be cached.
+
+
+### Data re-validation
+Data re validation is the process of updating the cached data with the fresh data.
+**Time based data re-validation**
+Next.js can re-validate the cached fetch request's data after a certain amount of time has passed. We can specify that time by following methods.
+
+1. provide **`{next: {revalidate: <time in seconds>}}`**  in option object of fetch request. **It is request specific**.
+2. provide **`export  const  revalidate  =  <time in seconds>;`** at top of the code. **It is tree specific.** *That means, if it is used in layout.tsx then it applies to all the children under that layout.tsx*
+
+Out of above two methods First has the more priority.
+See example `src/app/data-fetching/time-based-revalidation`
+
+## Data fetching in Next.js (client side)
+Data fetching in client side is same as we did in our react app.
+It don't have features like **request memoisation**, **data cache**, **revalidation** etc.
